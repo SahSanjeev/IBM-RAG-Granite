@@ -1,0 +1,4 @@
+autogen[retrieve-chat]
+python-dotenv
+chromadb
+sentence-transformers

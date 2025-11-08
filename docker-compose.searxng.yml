@@ -1,0 +1,41 @@
+version: '3.7'
+
+services:
+  searxng:
+    container_name: searxng
+    image: searxng/searxng:latest
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./searxng:/etc/searxng:rw
+    env_file:
+      - ./searxng/.env
+    restart: unless-stopped
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "1m"
+        max-file: "1"
+
+  open-webui:
+    container_name: open-webui
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "3000:8080"
+    volumes:
+      - ./data:/app/backend/data
+    environment:
+      - ENABLE_RAG_WEB_SEARCH=True
+      - RAG_WEB_SEARCH_ENGINE=searxng
+      - RAG_WEB_SEARCH_RESULT_COUNT=3
+      - RAG_WEB_SEARCH_CONCURRENT_REQUESTS=10
+      - SEARXNG_QUERY_URL=http://searxng:8080/search?q=<query>
+    depends_on:
+      - searxng
